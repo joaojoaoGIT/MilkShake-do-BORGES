@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Milkshake do Borges | Feito com leite de Borges!</title>
+  <meta name="description" content="Milkshake do Borges, feito com leite de Borges! Sabores temáticos, sorvetes, tamanhos e preços.">
+  <!-- Fontes: Bagel Fat One (destaques), Fraunces (títulos de seção) e Outfit (textos) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Leaflet: biblioteca do mapa real (tiles do OpenStreetMap/CARTO). Sem internet, o site usa o mapa desenhado. -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cardapio.css">
+</head>
+<body>
+
+<!-- ===== CABEÇALHO: transparente no topo, ganha fundo ao rolar (classe .rolou, via JS) ===== -->
+<header class="topo" id="topo">
+  <div class="topo__aviso">Sabores polêmicos, leite direto da fazenda<span class="aviso__extra"> &nbsp;✦&nbsp; Feito com leite de Borges!</span></div>
+  <div class="topo__linha">
+    <a href="#inicio" class="topo__logo" aria-label="Milkshake do Borges, início"><img src="assets/img/logo-texto.png" alt="Milkshake do Borges"></a>
+    <nav class="topo__menu" id="menu" aria-label="Principal">
+      <a href="#cardapio">Cardápio</a>
+      <a href="#sorvetes">Sorvetes</a>
+      <a href="#fazenda">Nosso leite</a>
+      <a href="#comofazemos">Como fazemos</a>
+      <a href="#borges">O Borges</a>
+      <a href="#lojas">Lojas</a>
+      <a href="#duvidas">Dúvidas</a>
+    </nav>
+    <div class="topo__acoes">
+      <div class="redes redes--topo" data-redes="2F6F50"></div>
+      <a class="btn btn--rosa btn--pequeno" href="#cardapio">Ver cardápio</a>
+      <a class="topo__admin" href="admin/index.html" title="Abrir o painel administrativo (dashboard)">Admin</a>
+      <button type="button" class="topo__sacola" data-acao="abrir-sacola" aria-label="Abrir sacola"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V7a3 3 0 0 1 6 0v1"/></svg><span class="contador" id="contadorSacola" hidden>0</span></button>
+      <button class="topo__burger" id="burger" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="topo__progresso" id="progresso"></div>
+</header>
+
+<main>
+  <!-- ===== HERO: foto grande do Borges, cortada na faixa de sabores ===== -->
+  <section class="hero" id="inicio">
+    <span class="mancha" aria-hidden="true"></span>
+    <div class="hero__texto">
+      <p class="hero__tema">Edição Sabores Polêmicos</p>
+      <h1>Milkshake do Borges, feito com leite de Borges!</h1>
+      <p class="hero__sub">Milkshakes cremosos com sorvete artesanal e muito leite. Seis sabores com opinião forte, o especial BorgesShake, sorvetes e três tamanhos.</p>
+      <div class="hero__botoes">
+        <a class="btn btn--rosa" href="#cardapio">Ver cardápio</a>
+        <a class="btn btn--contorno" href="#sorvetes">Ver sorvetes</a>
+      </div>
+    </div>
+    <div class="hero__foto" id="heroFoto">
+      <img src="assets/img/borges-camisa10.png" alt="Borges de camisa amarela segurando um milkshake de chocolate">
+    </div>
+    <div class="granulados" id="granulados" aria-hidden="true"></div>
+    <!-- Selo giratório com o slogan (texto em círculo via SVG textPath) -->
+    <svg class="selo" id="selo" viewBox="0 0 120 120" aria-hidden="true">
+      <defs><path id="circulo" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1-88 0"/></defs>
+      <circle cx="60" cy="60" r="58" fill="#FFE49A"/>
+      <text class="selo__texto"><textPath href="#circulo">feito com leite de Borges ✦ feito com leite de Borges ✦</textPath></text>
+      <circle cx="60" cy="60" r="22" fill="#E8558E"/>
+      <text x="60" y="68" text-anchor="middle" class="selo__b">B</text>
+    </svg>
+    <!-- Faixa amarela que "corta" a foto: nomes dos sabores (preenchida pelo JS) -->
+    <div class="faixa" aria-hidden="true"><div class="faixa__trilho" id="faixa"></div></div>
+  </section>
+
+  <!-- ===== CARDÁPIO: milkshakes e sorvetes (cartões criados pelo JS) ===== -->
+  <section class="secao cardapio" id="cardapio">
+    <h2 data-revela>Cardápio do Borges</h2>
+    <p class="intro" data-revela><span id="introPedido">Escolha, monte e retire na loja. Pedido de demonstração: nada é cobrado nem enviado.</span> Os nomes dos sabores são só brincadeira e não se referem a pessoas, empresas, partidos ou campanhas reais.</p>
+
+    <!-- Loja de retirada (a lista vem do array LOJAS) -->
+    <div class="retirada" data-revela>
+      <div><small>Retirar em</small><button type="button" class="retirada__loja" id="trocarLoja">Escolher a loja de retirada <span aria-hidden="true">&#9662;</span></button></div>
+      <p class="retirada__status" id="lojaStatus"></p>
+      <button type="button" class="btn btn--contorno btn--pequeno" id="abrirHistorico">Meus pedidos</button>
+      <p class="retirada__banco" id="statusBanco">Conectando ao banco...</p>
+    </div>
+
+    <div class="cardapio__layout">
+      <!-- Barra de categorias à esquerda e busca (montadas pelo JS) -->
+      <aside class="abas" id="abasCardapio" aria-label="Categorias"></aside>
+      <!-- Todos os produtos juntos numa só grade (montados pelo JS) -->
+      <div class="cardapio__lista"><div id="catalogo"></div></div>
+    </div>
+  </section>
+
+  <!-- ===== DIFERENCIAL: leite direto da fazenda do Borges =====
+       A história abaixo é FICTÍCIA e feita para divertir: edite à vontade. -->
+  <section class="secao fazenda" id="fazenda">
+    <h2 data-revela>Leite direto do Borges</h2>
+    <p class="intro" data-revela>Aqui o diferencial não é segredo: o leite sai da fazenda do próprio Borges e vai direto para o seu copo.</p>
+
+    <div class="fazenda__palco">
+      <figure class="fazenda__retrato" data-revela>
+        <span class="manchas" aria-hidden="true"></span>
+        <img src="assets/img/borges-tsundere.png" alt="Borges de boné com a mão estendida, convidando a provar o leite">
+        <figcaption class="balao">Leite fresquinho!</figcaption>
+      </figure>
+      <div class="fazenda__historia" data-revela>
+        <h3>A história do leite de Borges</h3>
+        <p>Tudo começou num domingo de manhã, quando o Borges tomou um milkshake e achou o leite aguado demais. "Assim não dá", disse. No mesmo dia ele comprou um pedaço de terra, um boné verde-oliva e algumas vaquinhas.</p>
+        <p>O Borges cansou de sobrecarregar as pobres vaquinhas. Hoje ele mesmo arregaça as mangas, vai ao curral de manhã cedo e tira o leite com as próprias mãos, enquanto elas supervisionam de camarote. Cada vaca tem nome, mimo e preferência musical (a Mimosa só ouve sertanejo e cobra pontualidade).</p>
+        <p>Sem atalho e sem atravessador: do pasto para o copo, com o capricho de quem cuida de tudo de perto.</p>
+        <ul class="selos">
+          <li>Fazenda própria</li>
+          <li>Vaquinhas com nome</li>
+          <li>Do pasto ao copo</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Cena da fazenda: morros e celeiro em SVG; as vaquinhas vêm da API Iconify (emoji Noto) -->
+    <div class="pasto" aria-hidden="true">
+      <svg class="pasto__cena" viewBox="0 0 1200 260" preserveAspectRatio="none">
+        <circle class="sol" cx="1040" cy="70" r="38" fill="#FFE49A"/>
+        <path d="M0 160c140-60 260-60 400-10s300 50 460-10 240-30 340 10v110H0z" fill="#B5E3C8"/>
+        <path d="M0 200c180-40 320-30 520 0s440 30 680-20v80H0z" fill="#8FD0AB"/>
+        <g transform="translate(120 96)"><rect width="86" height="62" rx="4" fill="#E8558E"/><path d="M-6 6L43-30 92 6z" fill="#C93573"/><rect x="28" y="22" width="30" height="40" fill="#FFF9F3"/><path d="M28 22l30 40M58 22L28 62" stroke="#C93573" stroke-width="3"/></g>
+        <path d="M0 238h1200" stroke="#6FB88F" stroke-width="2"/>
+      </svg>
+      <span class="nuvem nuvem--1"></span><span class="nuvem nuvem--2"></span>
+      <div class="vacas">
+        <span class="vaca" data-fala="Muuu!"><img src="https://api.iconify.design/noto/cow.svg" alt="" onerror="this.replaceWith('🐄')"></span>
+        <span class="vaca vaca--2" data-fala="Leite fresco!"><img src="https://api.iconify.design/noto/cow-face.svg" alt="" onerror="this.replaceWith('🐮')"></span>
+        <span class="vaca vaca--3" data-fala="Mimosa presente"><img src="https://api.iconify.design/noto/cow.svg" alt="" onerror="this.replaceWith('🐄')"></span>
+        <span class="vaca vaca--4" data-fala="Muuuu!"><img src="https://api.iconify.design/noto/cow-face.svg" alt="" onerror="this.replaceWith('🐮')"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== COMO FAZEMOS ===== -->
+  <section class="secao como" id="comofazemos">
+    <h2 data-revela>Como o milkshake nasce</h2>
+    <div class="como__passos">
+      <article data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/ice-cream-cone.svg?color=%23E8558E" alt="" onerror="this.remove()">
+        <h3>Sorvete artesanal</h3>
+        <p>Todo copo leva 150 g de sorvete artesanal, do menor ao maior tamanho.</p>
+      </article>
+      <article data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/milk.svg?color=%232F6F50" alt="" onerror="this.remove()">
+        <h3>Leite de Borges</h3>
+        <p>O leite muda com o tamanho: 150 ml no de 300, 350 ml no de 500 e 550 ml no de 700.</p>
+      </article>
+      <article data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/sparkles.svg?color=%23E0A91F" alt="" onerror="this.remove()">
+        <h3>Copo, canudo e pronto</h3>
+        <p>Sai batido na hora, no copo de 300, 500 ou 700 ml, com canudo.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== SOBRE O BORGES ===== -->
+  <section class="secao borges" id="borges">
+    <figure class="borges__retrato" data-revela>
+      <img src="assets/img/borges-terno.png" alt="Borges de terno verde e boné, de braços cruzados">
+    </figure>
+    <div data-revela>
+      <h2>Quem faz é o Borges</h2>
+      <p>Cada copo sai da mão do Borges, com sorvete artesanal e leite de verdade. Sem pressa e sem atalho: o milkshake chega na textura certa, grosso o bastante para o canudo e cremoso o bastante para tomar até o fim.</p>
+      <p>Por isso o slogan é levado a sério: <strong>feito com leite de Borges!</strong></p>
+    </div>
+  </section>
+<!-- ===== ONDE NOS ENCONTRAR =====
+       LOJAS FICTÍCIAS: nomes, endereços, telefones e horários são de exemplo (edite o array LOJAS no js/main.js). -->
+  <section class="secao lojas" id="lojas">
+    <h2 data-revela>Onde nos encontrar</h2>
+    <p class="intro" data-revela>Três lojas na Grande Porto Alegre. Toque em um ponto do mapa ou escolha uma loja para ver endereço e horário.</p>
+    <div class="lojas__palco">
+      <div class="mapa" data-revela>
+        <!-- Mapa real (Leaflet) criado pelo JS em #mapaReal. O desenho em SVG abaixo é o plano B, usado se o mapa real não carregar. -->
+        <div class="mapa__real" id="mapaReal" hidden></div>
+        <svg viewBox="0 0 600 440" role="img" aria-label="Mapa ilustrativo da Grande Porto Alegre com as três lojas">
+          <rect width="600" height="440" fill="#FFF9F3"/>
+          <ellipse cx="420" cy="80" rx="90" ry="46" fill="#D4EEDD"/><ellipse cx="470" cy="330" rx="110" ry="60" fill="#D4EEDD"/><ellipse cx="330" cy="395" rx="60" ry="28" fill="#D4EEDD"/>
+          <path d="M0 110C46 132 82 186 70 250C60 306 98 360 76 440H0Z" fill="#CFE8F5"/>
+          <path d="M14 170q16 8 32 0t32 0M10 240q16 8 32 0t28 0M16 320q16 8 32 0t24 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>
+          <text x="22" y="205" class="mapa__rotulo mapa__rotulo--agua">Guaíba</text>
+          <path d="M228 232C290 214 342 204 396 196" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <path d="M170 312C200 282 214 258 228 232S258 178 264 150 248 108 232 92 206 54 190 34" stroke="#fff" stroke-width="12" fill="none" stroke-linecap="round"/>
+          <path d="M170 312C200 282 214 258 228 232S258 178 264 150 248 108 232 92 206 54 190 34" stroke="#F28DB0" stroke-width="3" fill="none" stroke-dasharray="2 9" stroke-linecap="round"/>
+          <text x="282" y="190" class="mapa__rotulo">BR-116</text>
+          <text x="248" y="88" class="mapa__rotulo">São Leopoldo</text>
+          <text x="204" y="34" class="mapa__rotulo">Novo Hamburgo</text>
+          <text x="404" y="190" class="mapa__rotulo">Gravataí</text>
+          <g id="pinos"></g>
+        </svg>
+      </div>
+      <div class="lojas__lista" id="listaLojas"></div>
+    </div>
+    <p class="lojas__nota">Mapa ilustrativo. Endereços, telefones e horários de exemplo.</p>
+  </section>
+
+  <!-- ===== BOM SABER (Dúvidas) ===== -->
+  <section class="secao info" id="duvidas">
+    <h2 data-revela>Bom saber</h2>
+    <p class="intro" data-revela>Tudo o que vale saber antes de chegar: o que vai em cada copo, horários, como servimos e os cuidados com alergias.</p>
+
+    <!-- Horário, endereço e respostas abaixo são DE EXEMPLO: ajuste para a loja real -->
+    <div class="info__grade">
+      <div class="cartao" data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/glass-water.svg?color=%23E8558E" alt="" onerror="this.remove()">
+        <h3>O que vai em cada copo</h3>
+        <table class="tabela">
+          <thead><tr><th>Copo</th><th>Sorvete</th><th>Leite</th></tr></thead>
+          <tbody>
+            <tr><td>300 ml</td><td>150 g</td><td>150 ml</td></tr>
+            <tr><td>500 ml</td><td>150 g</td><td>350 ml</td></tr>
+            <tr><td>700 ml</td><td>150 g</td><td>550 ml</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cartao" data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/lightbulb.svg?color=%23E0A91F" alt="" onerror="this.remove()">
+        <h3>Qual tamanho pedir?</h3>
+        <ul class="horarios">
+          <li><span>300 ml</span><b>Para matar a vontade</b></li>
+          <li><span>500 ml</span><b>O equilíbrio perfeito</b></li>
+          <li><span>700 ml</span><b>Para quem ama leite</b></li>
+        </ul>
+      </div>
+      <div class="cartao" data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/clock.svg?color=%232F6F50" alt="" onerror="this.remove()">
+        <h3>Horário das lojas</h3>
+        <ul class="horarios">
+          <li><span>Porto Alegre</span><b>Todos os dias, 12h às 23h</b></li>
+          <li><span>Canoas</span><b>Todos os dias, 12h às 22h</b></li>
+          <li><span>Sapucaia do Sul</span><b>Terça a domingo, 13h às 22h</b></li>
+        </ul>
+      </div>
+      <div class="cartao" data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/package.svg?color=%23E8558E" alt="" onerror="this.remove()">
+        <h3>Como servimos</h3>
+        <ul class="lista-simples">
+          <li>Milkshake em copo de 300, 500 ou 700 ml, com canudo.</li>
+          <li>Sorvete na casquinha ou no cascão.</li>
+          <li>Batido na hora, então pode levar alguns minutinhos.</li>
+          <li>Também para viagem.</li>
+        </ul>
+      </div>
+      <div class="cartao" data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/triangle-alert.svg?color=%23E0A91F" alt="" onerror="this.remove()">
+        <h3>Alergias e cuidados</h3>
+        <p>Todos os nossos produtos contêm leite. Alguns sabores levam avelã, pistache, biscoito (glúten) ou outras castanhas. Se você tem alergia, avise o atendente antes de pedir.</p>
+      </div>
+      <div class="cartao" data-revela>
+        <img class="icone" src="https://api.iconify.design/lucide/map-pin.svg?color=%232F6F50" alt="" onerror="this.remove()">
+        <h3>Onde estamos</h3>
+        <p>Temos lojas em Porto Alegre, Canoas e Sapucaia do Sul. Veja o mapa e os endereços na seção <a href="#lojas">Lojas</a>. O atendimento é no balcão, sem pedido pelo site por enquanto.</p>
+      </div>
+    </div>
+
+    <div class="faq">
+      <details data-revela><summary>O que é o BorgesShake?</summary><p>É o especial da casa: milkshake com leite fresco tirado na fazenda do Borges, sorvete de creme, doce de leite e chantilly.</p></details>
+      <details data-revela><summary>Qual a diferença entre os tamanhos?</summary><p>A quantidade de leite. O sorvete é o mesmo em todos (150 g), então quanto maior o copo, mais leve fica o shake.</p></details>
+      <details data-revela><summary>Vocês vendem só milkshake?</summary><p>Também vendemos sorvete em bolas, em oito sabores: 1 bola por R$ 6, 2 por R$ 10 e 3 por R$ 15.</p></details>
+      <details data-revela><summary>Os milkshakes têm álcool?</summary><p>Nenhum. Aqui o único "teor" que importa é o de leite.</p></details>
+      <details data-revela><summary>Tem opção sem lactose?</summary><p>Por enquanto não. O nosso diferencial é o leite direto da fazenda, então todos os milkshakes levam leite.</p></details>
+      <details data-revela><summary>Posso pedir mais calda ou chantilly?</summary><p>Pode. É só pedir ao atendente na hora de montar o seu copo.</p></details>
+      <details data-revela><summary>Vocês entregam?</summary><p>Ainda não. Por enquanto o atendimento é no balcão, para você ver o shake sendo batido.</p></details>
+      <details data-revela><summary>Os nomes dos sabores falam de alguém de verdade?</summary><p>Não. São brincadeiras com expressões que a gente ouve no noticiário e não se referem a nenhuma pessoa, empresa, partido ou campanha real.</p></details>
+      <details data-revela><summary>Dá para fazer o pedido pelo site?</summary><p>Ainda não. Por enquanto o site é só de informação: sabores, tamanhos e preços.</p></details>
+    </div>
+  </section>
+
+  </main>
+
+<!-- ===== RODAPÉ ===== -->
+<footer class="rodape">
+  <div class="rodape__grade">
+    <div class="rodape__marca">
+      <img src="assets/img/logo-completa.png" alt="Logo Milkshake do Borges" width="150">
+      <p class="rodape__slogan">Milkshake do Borges, feito com leite de Borges!</p>
+      <div class="redes" data-redes="FFE49A"></div>
+    </div>
+    <nav aria-label="Rodapé">
+      <h4>Navegue</h4>
+      <a href="#cardapio">Cardápio</a><a href="#sorvetes">Sorvetes</a><a href="#comofazemos">Como fazemos</a><a href="#lojas">Lojas</a><a href="#duvidas">Dúvidas</a>
+    </nav>
+    <div>
+      <h4>Milkshakes</h4>
+      <ul class="rodape__sabores" id="rodapeSabores"></ul>
+    </div>
+    <!-- DADOS FICTÍCIOS: troque pelos endereços e contatos reais -->
+    <address>
+      <h4>Nossas lojas</h4>
+      <p><strong>Porto Alegre</strong><br>R. José do Patrocínio, 480, Cidade Baixa</p>
+      <p><strong>Canoas</strong><br>Av. Guilherme Schell, 1250, Centro</p>
+      <p><strong>Sapucaia do Sul</strong><br>Av. Getúlio Vargas, 2100, Centro</p>
+      <p>contato@milkshakedoborges.com.br</p>
+    </address>
+  </div>
+  <div class="rodape__base">
+    <span>&copy; <span id="ano"></span> Milkshake do Borges. Todos os direitos reservados.</span>
+    <a class="rodape__admin" href="admin/index.html">Área do administrador</a>
+    <span>Nomes dos sabores são brincadeira, sem relação com pessoas, empresas ou partidos reais.</span>
+  </div>
+</footer>
+
+<!-- ===== Janelas do pedido (o conteúdo é montado por js/pedido.js) ===== -->
+<dialog class="janela" id="modalProduto" aria-label="Detalhes do produto"></dialog>
+<dialog class="janela janela--loja" id="modalLoja" aria-label="Escolher a loja de retirada"></dialog>
+<dialog class="gaveta" id="gaveta" aria-label="Sua sacola">
+  <header class="gaveta__topo">
+    <button type="button" class="gaveta__voltar" id="gavetaVoltar" aria-label="Voltar" hidden>&larr;</button>
+    <h2 class="gaveta__titulo" id="gavetaTitulo">Sua sacola</h2>
+    <button type="button" class="gaveta__fechar" data-acao="fechar-gaveta" aria-label="Fechar">&times;</button>
+  </header>
+  <div class="gaveta__corpo" id="gavetaCorpo"></div>
+  <footer class="gaveta__rodape" id="gavetaRodape"></footer>
+</dialog>
+<button type="button" class="barra-sacola" id="barraSacola" data-acao="abrir-sacola"><span id="barraSacolaTexto"></span><strong>Ver sacola</strong><span id="barraSacolaTotal"></span></button>
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="js/desenhos.js"></script>
+<script src="js/cardapio-dados.js"></script>
+<script src="js/main.js"></script>
+<script src="js/banco.js"></script>
+<script src="js/pedido.js"></script>
+</body>
+</html>

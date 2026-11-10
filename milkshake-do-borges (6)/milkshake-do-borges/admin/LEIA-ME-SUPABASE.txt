@@ -1,0 +1,47 @@
+PAINEL ADMIN (dashboard) - Milkshake do Borges, ligado ao Supabase
+==================================================================
+Esta pasta (admin/) é o painel conectado ao banco. A versão antiga, que guardava tudo só no
+navegador (login admin/admin123), foi removida. O botão "Admin" do site abre este painel.
+
+PRIMEIRA VEZ (banco novo)
+1. Crie um projeto em supabase.com.
+2. SQL Editor: rode, NESTA ORDEM:
+     supabase/schema.sql              (tabelas)
+     supabase/seed.sql                (dados iniciais)
+     supabase/ATUALIZAR-BANCO.sql     (02 + 03 juntos: pedidos do site, custo por venda, lojas, combos
+                                      e sabores IGUAIS aos do site. Prefira rodar este arquivo.)
+3. Authentication > Users > Add user: crie seu e-mail/senha de admin (marque Auto Confirm).
+4. Em public.usuario, ligue o perfil à conta do Auth (UID em Authentication > Users):
+     update public.usuario set auth_user_id = 'UID-DA-CONTA-AUTH' where login = 'email@exemplo.com';
+   Se ainda não houver perfil, crie um registro em public.usuario (id novo, nome, login = e-mail,
+   perfil, ativo = true, auth_user_id = UID).
+5. A URL e a chave "publishable" do projeto ficam em js/supabase.js e js/banco.js (do site).
+   Nunca coloque a chave "service_role" nesses arquivos.
+6. Abra o site por um servidor local (na pasta do site):  python -m http.server 8000
+   Site:  http://localhost:8000      Painel:  http://localhost:8000/admin/
+
+BANCO JÁ EXISTENTE
+Rode apenas supabase/ATUALIZAR-BANCO.sql no SQL Editor. Se você abrir o painel antes, ele abre
+no "modo antigo" e mostra um aviso (o erro "Could not find the table ... schema cache" significa
+que o SQL ainda não foi rodado, ou que a API ainda não recarregou: o arquivo já termina com notify pgrst).
+
+O QUE MUDOU
+- Sabores: o banco agora é a fonte. Milkshakes ficam em "Sabores de milkshake" (7) e sorvetes em
+  "Sabores de sorvete" (8), iguais aos do site. Os sabores antigos que não existem no site foram
+  desativados (não apagados), para não perder o histórico de vendas.
+- Custo de cada venda: venda.custo_total e item_venda.custo_total somam TUDO que foi gasto
+  (ingredientes da composição, embalagem e adicionais). Cada baixa de estoque fica em
+  movimentacao_estoque ligada à venda e ao item (id_item_venda), com o custo médio do momento.
+  O Relatório diário mostra "Custo das vendas" e "Lucro bruto".
+- Pedidos do site: chegam em "Pedidos do site". Mude o status (recebido, preparando, pronto,
+  retirado, cancelado) e o cliente vê no site. Ao CANCELAR, o estoque é devolvido sozinho e a
+  venda vira "cancelada" (sai dos relatórios).
+- Os preços são sempre calculados pelo banco (função criar_pedido_site). O site só envia IDs.
+- IDs: o painel usa "maior id + 1"; o site usa uma sequência que começa em 1.000.000.000. O painel
+  ignora essa faixa ao criar ids, então os dois nunca colidem.
+- O painel recarrega os dados sozinho a cada 20 s (se nada estiver sendo editado), para enxergar
+  os pedidos novos e o estoque atualizado.
+
+CUSTOS DE EXEMPLO
+Os adicionais (chantilly, calda, granulado, doce de leite) foram criados com custos e quantidades
+de EXEMPLO. Ajuste em Estoque / Adicionais. Lojas, endereços e telefones também são fictícios.

@@ -1,0 +1,49 @@
+MILKSHAKE DO BORGES - site + painel admin
+=========================================
+Abrir:  na pasta do site, rode  python -m http.server 8000  e acesse http://localhost:8000
+(dois cliques em index.html também abrem, mas alguns serviços de mapa bloqueiam páginas abertas
+direto do disco e o login do painel funciona melhor por localhost).
+
+PASTAS
+- index.html, css/, js/, assets/   o site
+- admin/                           painel administrativo conectado ao Supabase (botão "Admin" do site)
+- admin/supabase/                  SQL do banco (veja admin/LEIA-ME-SUPABASE.txt)
+
+ARQUIVOS DO SITE
+- js/desenhos.js        copo e casquinha em SVG (aparecem enquanto a foto real carrega)
+- js/cardapio-dados.js  cardápio local (sabores, preços, adicionais, combos). É a cópia de segurança:
+                        com o banco conectado, o que vale é o que está no banco
+- js/banco.js           ligação com o Supabase (URL e chave publishable)
+- js/main.js            página: lojas, mapa real, ondas, animações
+- js/pedido.js          cardápio, sacola, retirada na loja, pedido e acompanhamento
+- css/style.css         visual geral | css/cardapio.css  cardápio e pedido
+
+COMO FUNCIONA A COMPRA (inspirada em McDonald's, BK e Bob's)
+1. Escolher a loja de retirada num mapa real (ou "usar minha localização" para achar a mais perto).
+2. Abas Destaque, Combos, Milkshakes e Sorvetes, com busca.
+3. Janela do produto: tamanho/bolas, adicionais, observação e quantidade.
+4. Sacola, retirada (o quanto antes ou agendada), nome, celular e forma de pagamento (paga na loja).
+5. Confirmação com número, código de retirada, QR Pix de demonstração e andamento do pedido.
+Com o banco conectado, o pedido é gravado pela função criar_pedido_site (preço, estoque e custo
+calculados no banco) e o status vem do dashboard. Sem banco ou sem internet, o site entra em
+"modo demonstração": o pedido fica só no navegador.
+
+MAPA REAL
+Leaflet com 4 mapas gratuitos e SEM chave (Esri ruas, OpenStreetMap, CARTO e satélite Esri). O botão no
+canto do mapa troca entre eles e o site muda sozinho se os blocos não carregarem. Sem a biblioteca,
+mostra um mapa desenhado.
+
+FOTOS REAIS
+Coloque suas fotos em assets/img/cardapio/<slug>.jpg (têm prioridade). Sem elas o site procura
+fotos livres no Wikimedia Commons, ou no Unsplash se você colocar a chave em UNSPLASH_KEY (js/pedido.js).
+
+PARA TROCAR OS DADOS FICTÍCIOS
+Lojas, endereços, telefones, horários, custos e combos: pelo dashboard (Lojas, Combos, Adicionais).
+
+
+NOVIDADES (partes 1 a 3)
+- Cardápio em grade única, com barra de categorias à esquerda (no celular, fileira fixa no topo).
+- Painel: logo, botão de mostrar senha, dashboard no estilo do site, vendas por loja, pedidos com
+  botão "Terminar pedido" (grava "retirado" no banco) e relatório diário corrigido.
+- Sabores: o painel mostra um aviso quando os sabores diferem do site e o botão "Deixar igual ao site".
+- Carregamento: roda girando aparece no site e no painel quando algo demora mais de ~0,4 s.

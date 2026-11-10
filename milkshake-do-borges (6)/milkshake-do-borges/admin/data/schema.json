@@ -1,0 +1,342 @@
+{
+ "fornecedor": {
+  "t": "Fornecedores",
+  "g": "Compras",
+  "l": "nome",
+  "f": [
+   "nome:text",
+   "marca:text",
+   "qualidade:text",
+   "telefone:text",
+   "email:text",
+   "endereco:text",
+   "ativo:bool"
+  ]
+ },
+ "compra": {
+  "t": "Compras",
+  "g": "Compras",
+  "l": "data_compra",
+  "f": [
+   "id_fornecedor:fk:fornecedor",
+   "data_compra:date",
+   "valor_total:num",
+   "observacao:text"
+  ]
+ },
+ "item_compra": {
+  "t": "Itens da Compra",
+  "g": "Compras",
+  "l": "id_item_estoque",
+  "f": [
+   "id_compra:fk:compra",
+   "id_item_estoque:fk:item_estoque",
+   "quantidade:num",
+   "preco_unitario:num",
+   "desconto:num",
+   "valor_total:num"
+  ]
+ },
+ "categoria_item": {
+  "t": "Categorias de Item",
+  "g": "Estoque",
+  "l": "nome",
+  "f": [
+   "nome:text",
+   "descricao:text"
+  ]
+ },
+ "item_estoque": {
+  "t": "Itens de Estoque",
+  "g": "Estoque",
+  "l": "nome",
+  "f": [
+   "id_categoria:fk:categoria_item",
+   "nome:text",
+   "tipo:sel:ingrediente|embalagem|complemento",
+   "unidade_medida:sel:unidade|ml|g|kg",
+   "custo_unitario_medio:num",
+   "estoque_minimo:num",
+   "ativo:bool"
+  ]
+ },
+ "estoque_atual": {
+  "t": "Estoque Atual",
+  "g": "Estoque",
+  "l": "id_item_estoque",
+  "f": [
+   "id_item_estoque:fk:item_estoque",
+   "quantidade_disponivel:num",
+   "data_atualizacao:datetime"
+  ]
+ },
+ "movimentacao_estoque": {
+  "t": "Movimentações",
+  "g": "Estoque",
+  "l": "id",
+  "f": [
+   "id_item_estoque:fk:item_estoque",
+   "id_usuario:fk:usuario",
+   "data_hora:datetime",
+   "tipo_movimentacao:sel:entrada|saida|ajuste",
+   "quantidade:num",
+   "custo_unitario:num",
+   "referencia_tipo:sel:compra|venda|perda|ajuste",
+   "referencia_id:num",
+   "id_item_venda:num",
+   "observacao:text"
+  ]
+ },
+ "perda_estoque": {
+  "t": "Perdas",
+  "g": "Estoque",
+  "l": "motivo",
+  "f": [
+   "id_movimentacao:fk:movimentacao_estoque",
+   "motivo:text",
+   "quantidade:num",
+   "valor_estimado:num"
+  ]
+ },
+ "alerta_estoque": {
+  "t": "Alertas de Estoque",
+  "g": "Estoque",
+  "l": "id_item_estoque",
+  "f": [
+   "id_item_estoque:fk:item_estoque",
+   "data_alerta:date",
+   "quantidade_atual:num",
+   "limite_configurado:num",
+   "status:sel:pendente|resolvido",
+   "data_resolucao:date"
+  ]
+ },
+ "produto": {
+  "t": "Produtos",
+  "g": "Catálogo",
+  "l": "nome",
+  "f": [
+   "nome:text",
+   "slug:text",
+   "tipo:sel:milkshake|sorvete|outro",
+   "personalizavel:bool",
+   "descricao:text",
+   "ativo:bool"
+  ]
+ },
+ "tamanho_milkshake": {
+  "t": "Tamanhos Milkshake",
+  "g": "Catálogo",
+  "l": "volume_ml",
+  "f": [
+   "id_produto:fk:produto",
+   "volume_ml:num",
+   "preco_venda:num",
+   "ordem:num"
+  ]
+ },
+ "composicao_milkshake": {
+  "t": "Composição Milkshake",
+  "g": "Catálogo",
+  "l": "id_item_estoque",
+  "f": [
+   "id_tamanho:fk:tamanho_milkshake",
+   "id_item_estoque:fk:item_estoque",
+   "quantidade:num",
+   "unidade:sel:unidade|ml|g"
+  ]
+ },
+ "sabor_sorvete": {
+  "t": "Sabores de Sorvete",
+  "g": "Catálogo",
+  "l": "nome",
+  "f": [
+   "id_produto:fk:produto",
+   "nome:text",
+   "slug:text",
+   "descricao:text",
+   "peso_por_bola_g:num",
+   "ordem:num",
+   "ativo:bool"
+  ]
+ },
+ "porcao_sorvete": {
+  "t": "Porções de Sorvete",
+  "g": "Catálogo",
+  "l": "id_sabor",
+  "f": [
+   "id_sabor:fk:sabor_sorvete",
+   "qtd_bolas:num",
+   "preco_venda:num",
+   "ordem:num"
+  ]
+ },
+ "venda": {
+  "t": "Vendas",
+  "g": "Vendas",
+  "l": "data_venda",
+  "f": [
+   "id_usuario:fk:usuario",
+   "id_loja:fk:loja",
+   "origem:sel:balcao|site",
+   "status:sel:concluida|cancelada",
+   "data_venda:datetime",
+   "desconto_total:num",
+   "valor_total:num",
+   "custo_total:num"
+  ]
+ },
+ "item_venda": {
+  "t": "Itens da Venda",
+  "g": "Vendas",
+  "l": "id_produto",
+  "f": [
+   "id_venda:fk:venda",
+   "id_produto:fk:produto",
+   "id_tamanho:fk:tamanho_milkshake",
+   "id_sabor_milkshake:fk:sabor_milkshake",
+   "id_porcao:fk:porcao_sorvete",
+   "id_combo:fk:combo",
+   "quantidade:num",
+   "preco_unitario:num",
+   "valor_total:num",
+   "custo_total:num",
+   "observacao:text"
+  ]
+ },
+ "personalizacao": {
+  "t": "Personalizações",
+  "g": "Vendas",
+  "l": "id_item_estoque",
+  "f": [
+   "id_item_venda:fk:item_venda",
+   "id_item_estoque:fk:item_estoque",
+   "tipo:sel:sabor|complemento",
+   "quantidade:num",
+   "unidade:text",
+   "valor_adicional:num"
+  ]
+ },
+ "pagamento": {
+  "t": "Pagamentos",
+  "g": "Vendas",
+  "l": "valor",
+  "f": [
+   "id_venda:fk:venda",
+   "id_forma_pagamento:fk:forma_pagamento",
+   "valor:num",
+   "troco:num",
+   "observacao:text"
+  ]
+ },
+ "forma_pagamento": {
+  "t": "Formas de Pagamento",
+  "g": "Vendas",
+  "l": "nome",
+  "f": [
+   "nome:text",
+   "ativo:bool"
+  ]
+ },
+ "usuario": {
+  "t": "Usuários",
+  "g": "Sistema",
+  "l": "nome",
+  "f": [
+   "nome:text",
+   "login:text",
+   "senha_hash:text",
+   "perfil:sel:admin|gerente|operador",
+   "ativo:bool"
+  ]
+ },
+ "sabor_milkshake": {
+  "t": "Sabores de Milkshake",
+  "g": "Catálogo",
+  "l": "nome",
+  "f": [
+   "id_produto:fk:produto",
+   "nome:text",
+   "slug:text",
+   "tema:text",
+   "descricao:text",
+   "ingredientes:text",
+   "selo:text",
+   "destaque:bool",
+   "ordem:num",
+   "ativo:bool"
+  ]
+ },
+ "complemento": {
+  "t": "Adicionais (complementos)",
+  "g": "Catálogo",
+  "l": "nome",
+  "f": [
+   "id_item_estoque:fk:item_estoque",
+   "nome:text",
+   "slug:text",
+   "preco_venda:num",
+   "quantidade_uso:num",
+   "unidade:text",
+   "ativo:bool"
+  ]
+ },
+ "combo": {
+  "t": "Combos",
+  "g": "Catálogo",
+  "l": "nome",
+  "f": [
+   "nome:text",
+   "slug:text",
+   "descricao:text",
+   "preco_venda:num",
+   "ativo:bool"
+  ]
+ },
+ "combo_item": {
+  "t": "Itens do Combo",
+  "g": "Catálogo",
+  "l": "id_combo",
+  "f": [
+   "id_combo:fk:combo",
+   "tipo:sel:milkshake|sorvete",
+   "volume_ml:num",
+   "qtd_bolas:num",
+   "quantidade:num"
+  ]
+ },
+ "loja": {
+  "t": "Lojas",
+  "g": "Pedidos",
+  "l": "nome",
+  "f": [
+   "nome:text",
+   "cidade:text",
+   "endereco:text",
+   "telefone:text",
+   "lat:num",
+   "lng:num",
+   "horarios:text",
+   "ativo:bool"
+  ]
+ },
+ "pedido": {
+  "t": "Pedidos do site",
+  "g": "Pedidos",
+  "l": "numero",
+  "f": [
+   "numero:num",
+   "codigo:text",
+   "id_venda:fk:venda",
+   "id_loja:fk:loja",
+   "cliente_nome:text",
+   "cliente_telefone:text",
+   "retirada_tipo:sel:agora|agendar",
+   "retirada_prevista:datetime",
+   "status:sel:recebido|preparando|pronto|retirado|cancelado",
+   "observacao:text",
+   "criado_em:datetime",
+   "atualizado_em:datetime"
+  ]
+ }
+}
